@@ -1,0 +1,39 @@
+# name: Publish to Docker Hub
+# env:
+#   DOCKER_IMAGE: elssdu/oidc-jwt-provider
+# on:
+#   push:
+#     tags:
+#       - "v*"
+#     branches:
+#       - master
+#       - "release/*"
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#       - name: Log in with Docker Hub
+#         run: echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+#         env:
+#           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+#           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Build docker image
+#         run: docker build -t $DOCKER_IMAGE .
+
+#       - name: Push to latest
+#         if: github.ref == 'refs/heads/master'
+#         run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:latest && docker push $DOCKER_IMAGE:latest
+
+#       - name: Push to release tag
+#         if: startsWith(github.ref, 'refs/tags/v')
+#         run: |
+#           RELEASE_TAG=${GITHUB_REF/refs\/tags\/v/}
+#           docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$RELEASE_TAG && docker push $DOCKER_IMAGE:$RELEASE_TAG
+
+#       - name: Push to release branch
+#         if: startsWith(github.ref, 'refs/heads/release/')
+#         run: |
+#           RELEASE_BRANCH=${GITHUB_REF/refs\/heads\/release\//}
+#           docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$RELEASE_BRANCH && docker push $DOCKER_IMAGE:$RELEASE_BRANCH

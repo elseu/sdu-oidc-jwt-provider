@@ -1,0 +1,57 @@
+{
+  "name": "oidc-jwt-provider",
+  "version": "0.1.0",
+  "description": "Provide JWTs for API access from an OpenID Connect backend",
+  "main": "dist/index.js",
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && concurrently -i \"nodemon dist/index.js\" \"tsc -w\"",
+    "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --ext .ts"
+  },
+  "author": "Sebastiaan Besselsen <s.besselsen@sdu.nl>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.9.0",
+    "koa": "^2.13.0",
+    "koa-json": "^2.0.2",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^9.4.0",
+    "micromatch": "^4.0.2",
+    "ms": "^2.1.2",
+    "node-fetch": "^2.6.0",
+    "node-jose": "^1.1.4",
+    "randomstring": "^1.1.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/koa": "^2.11.4",
+    "@types/koa-json": "^2.0.18",
+    "@types/koa-logger": "^3.1.1",
+    "@types/koa-router": "^7.4.1",
+    "@types/micromatch": "^4.0.1",
+    "@types/ms": "^0.7.31",
+    "@types/node-fetch": "^2.5.7",
+    "@types/node-jose": "^1.1.4",
+    "@types/randomstring": "^1.1.6",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@typescript-eslint/parser": "^3.10.1",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.7.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "husky": "^4.2.5",
+    "nodemon": "^2.0.4",
+    "prettier": "^2.1.1",
+    "typescript": "^4.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run format && npm run lint"
+    }
+  }
+}

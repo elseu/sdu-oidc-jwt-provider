@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import * as querystring from "querystring";
 import * as jwksRsa from "jwks-rsa";
 
 export interface OidcEndpoints {
@@ -9,9 +10,21 @@ export interface OidcEndpoints {
     endSession?: string;
 }
 
+export interface OidcClientCredentials {
+    clientId: string;
+    clientSecret: string;
+}
+
 export interface OidcData {
     endpoints: OidcEndpoints;
+    scope: string;
+    credentials: OidcClientCredentials;
     jwksClient?: jwksRsa.JwksClient;
+}
+
+export interface OidcTokens {
+    accessToken: string;
+    idToken: string;
 }
 
 export async function loadOidcData(): Promise<OidcData> {
@@ -21,7 +34,20 @@ export async function loadOidcData(): Promise<OidcData> {
         console.log(`${k}:`, v);
     });
     console.groupEnd();
-    const output: OidcData = { endpoints };
+    if (!process.env.OIDC_CLIENT_ID) {
+        throw new Error("Need OIDC_CLIENT_ID");
+    }
+    if (!process.env.OIDC_CLIENT_SECRET) {
+        throw new Error("Need OIDC_CLIENT_SECRET");
+    }
+    const output: OidcData = {
+        endpoints,
+        scope: process.env.OIDC_SCOPE ?? "openid profile email",
+        credentials: {
+            clientId: process.env.OIDC_CLIENT_ID,
+            clientSecret: process.env.OIDC_CLIENT_SECRET,
+        },
+    };
     if (endpoints.jwks) {
         output.jwksClient = jwksRsa({
             jwksUri: endpoints.jwks,
@@ -31,6 +57,39 @@ export async function loadOidcData(): Promise<OidcData> {
         });
     }
     return output;
+}
+
+export async function fetchTokens(
+    code: string,
+    redirectUri: string,
+    oidcData: OidcData
+): Promise<OidcTokens> {
+    const { clientId, clientSecret } = oidcData.credentials;
+    const response = await fetch(oidcData.endpoints.token, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization:
+                "Basic " +
+                Buffer.from(clientId + ":" + clientSecret, "utf-8").toString(
+                    "base64"
+                ),
+        },
+        body: querystring.stringify({
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: redirectUri,
+        }),
+    });
+    const tokens = await response.json();
+    if (!tokens || !tokens.access_token || !tokens.id_token) {
+        console.error("Error while fetching tokens", tokens);
+        throw new Error("No tokens received.");
+    }
+    return {
+        accessToken: tokens.access_token,
+        idToken: tokens.id_token,
+    };
 }
 
 async function innerLoadOidcEndpoints(): Promise<OidcEndpoints> {

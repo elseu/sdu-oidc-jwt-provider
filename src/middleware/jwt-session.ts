@@ -136,10 +136,10 @@ export function jwtSession(
     const cookieMaxAge = ms(process.env.SESSION_MAX_INACTIVE ?? "30m");
     const tokenExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const algorithm = process.env.SESSION_SIGNATURE_ALGORITHM ?? "RS256";
-    const cookieSecure = isTruthy(process.env.SESSION_SECURE ?? "true");
+    const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
     if (!cookieSecure) {
         console.warn(
-            "⚠️  SESSION_SECURE: sweet Jesus, Pooh! That's not honey! You're eating INSECURE COOKIES 🙀 Set this to true in production."
+            "⚠️  COOKIES_SECURE: sweet Jesus, Pooh! That's not honey! You're eating INSECURE COOKIES 🙀 Set this to true in production."
         );
     }
     const signatureCookieName = cookieName + "sig";

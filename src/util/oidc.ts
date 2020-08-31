@@ -92,6 +92,21 @@ export async function fetchTokens(
     };
 }
 
+export async function fetchUserInfo(
+    accessToken: string,
+    oidcData: OidcData
+): Promise<Record<string, unknown> | null> {
+    if (!oidcData.endpoints.userinfo) {
+        return null;
+    }
+    const response = await fetch(oidcData.endpoints.userinfo, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    return (await response.json()) ?? null;
+}
+
 async function innerLoadOidcEndpoints(): Promise<OidcEndpoints> {
     const output: Partial<OidcEndpoints> = {};
     if (process.env.OIDC_AUTHORIZATION_ENDPOINT) {

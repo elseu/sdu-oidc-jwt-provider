@@ -8,11 +8,13 @@ export interface AppSession extends Record<string, unknown> {
     csrfToken: string;
     idToken?: string;
     accessTokenData?: Record<string, unknown>;
+    userInfo?: Record<string, unknown>;
 }
 
 export interface AppSessionState {
     appSession: AppSession;
     generateAppAccessToken(): Promise<string | null>;
+    clearAppSession(): void;
 }
 
 export function appSession(opts: {
@@ -71,6 +73,12 @@ export function appSession(opts: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 algorithm: accessTokenAlgorithm as any,
             });
+        };
+        ctx.state.clearAppSession = () => {
+            delete ctx.state.appSession.accessTokenData;
+            delete ctx.state.appSession.csrfToken;
+            delete ctx.state.appSession.idToken;
+            delete ctx.state.appSession.userInfo;
         };
         await next();
         ctx.state.jwtSession.setData(ctx.state.appSession);

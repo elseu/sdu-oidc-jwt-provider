@@ -15,7 +15,12 @@ import { isTruthy } from "./util/config";
 import { appSession, AppSessionState } from "./middleware/app-session";
 import { csrfTokenAuth } from "./middleware/csrf";
 import { redirectChecker } from "./util/redirect-check";
-import { loadOidcData, fetchTokens, OidcTokens } from "./util/oidc";
+import {
+    loadOidcData,
+    fetchTokens,
+    fetchUserInfo,
+    OidcTokens,
+} from "./util/oidc";
 
 dotenv.config();
 
@@ -28,6 +33,11 @@ const router = new Router();
     const keystore = await loadKeystore();
     const checkRedirect = await redirectChecker();
     const oidcData = await loadOidcData();
+
+    const defaultCookieOptions = {
+        httpOnly: true,
+        secure: isTruthy(process.env.COOKIES_SECURE ?? "true"),
+    };
 
     // JWKS endpoint.
     router.get("/.well-known/jwks.json", (ctx) => {
@@ -88,7 +98,7 @@ const router = new Router();
                 ru: ctx.query.redirect_uri,
             });
             const cookieOptions = {
-                httpOnly: true,
+                ...defaultCookieOptions,
                 maxAge: ms("30m"),
             };
             const queryParams = { ...ctx.query };
@@ -164,6 +174,13 @@ const router = new Router();
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     appSession.accessTokenData = accessTokenData as any;
                 }
+                const userInfo = await fetchUserInfo(
+                    tokens.accessToken,
+                    oidcData
+                );
+                if (userInfo) {
+                    appSession.userInfo = userInfo;
+                }
             }
             appSession.idToken = tokens?.idToken;
             const redirectParams: Record<string, string> = {
@@ -190,7 +207,7 @@ const router = new Router();
         if (oidcData.endpoints.endSession && appSession.idToken) {
             // First log out of the external IdP.
             const cookieOptions = {
-                httpOnly: true,
+                ...defaultCookieOptions,
                 maxAge: ms("10m"),
             };
             ctx.cookies.set(
@@ -213,8 +230,7 @@ const router = new Router();
         }
 
         // Log out right now.
-        delete appSession.idToken;
-        delete appSession.accessTokenData;
+        ctx.state.clearAppSession();
         if (postLogoutRedirectUri) {
             ctx.redirect(postLogoutRedirectUri);
             return;
@@ -227,9 +243,7 @@ const router = new Router();
         "/front-channel-logout",
         (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             // Clear our session.
-            const { appSession } = ctx.state;
-            delete appSession.idToken;
-            delete appSession.accessTokenData;
+            ctx.state.clearAppSession();
             ctx.body = "";
         }
     );
@@ -239,9 +253,7 @@ const router = new Router();
         "/logged-out",
         (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             // Clear our session.
-            const { appSession } = ctx.state;
-            delete appSession.idToken;
-            delete appSession.accessTokenData;
+            ctx.state.clearAppSession();
 
             const cookieName = "oidc_logout_redirect_uri";
             const redirectUri = ctx.cookies.get(cookieName);
@@ -256,9 +268,9 @@ const router = new Router();
 
     router.get(
         "/userinfo",
+        csrfTokenAuth(),
         (ctx: Koa.ParameterizedContext<AppSessionState>) => {
-            // TODO
-            ctx.body = {};
+            ctx.body = ctx.state.appSession.userInfo ?? {};
         }
     );
 

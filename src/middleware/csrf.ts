@@ -10,7 +10,7 @@ export function csrfTokenAuth(): Koa.Middleware<AppSessionState> {
             ctx.status = 403;
             ctx.body = {
                 status: "error",
-                message: "Mismatched CSRF token",
+                message: "Invalid bearer token",
             };
             return;
         }

@@ -6,18 +6,14 @@ import * as url from "url";
 type RedirectChecker = (uri: string) => boolean;
 
 export async function redirectChecker(): Promise<RedirectChecker> {
-    const hosts = (process.env.REDIRECT_ALLOW_HOSTS ?? "")
-        .split(",")
-        .filter((x) => x);
+    const hosts = (process.env.ALLOW_HOSTS ?? "").split(",").filter((x) => x);
     if (hosts.length === 0) {
-        throw new Error("REDIRECT_ALLOW_HOSTS: this is required.");
+        throw new Error("ALLOW_HOSTS: this is required.");
     }
-    const allowInsecure = isTruthy(
-        process.env.REDIRECT_ALLOW_INSECURE ?? "false"
-    );
+    const allowInsecure = isTruthy(process.env.ALLOW_INSECURE ?? "false");
     if (allowInsecure) {
         console.warn(
-            "⚠️  REDIRECT_ALLOW_INSECURE: allowing insecure redirects is DANGEROUS because your traffic may be intercepted."
+            "⚠️  ALLOW_INSECURE: allowing insecure redirects is DANGEROUS because your traffic may be intercepted."
         );
     }
 
@@ -25,7 +21,7 @@ export async function redirectChecker(): Promise<RedirectChecker> {
         randomstring.generate(32) + "." + randomstring.generate(2);
     if (micromatch.any(randomHost, hosts)) {
         console.warn(
-            "⚠️  REDIRECT_ALLOW_HOSTS: this is probably set too liberally; it looks like it can match anything."
+            "⚠️  ALLOW_HOSTS: this is probably set too liberally; it looks like it can match anything."
         );
     }
     console.log("Allowed hosts:", hosts);

@@ -14,6 +14,7 @@
   "author": "Sebastiaan Besselsen <s.besselsen@sdu.nl>",
   "license": "MIT",
   "dependencies": {
+    "@koa/cors": "^3.1.0",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.9.0",
@@ -33,6 +34,7 @@
     "@types/koa-json": "^2.0.18",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-router": "^7.4.1",
+    "@types/koa__cors": "^3.0.1",
     "@types/micromatch": "^4.0.1",
     "@types/ms": "^0.7.31",
     "@types/node-fetch": "^2.5.7",

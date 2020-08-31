@@ -2,6 +2,7 @@ import * as Koa from "koa";
 import * as Router from "koa-router";
 import * as logger from "koa-logger";
 import * as json from "koa-json";
+import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
@@ -180,6 +181,16 @@ const router = new Router();
     if (isTruthy(process.env.LOG_REQUESTS)) {
         app.use(logger());
     }
+    app.use(
+        cors({
+            origin: (ctx) => {
+                if (ctx.headers.origin && checkRedirect(ctx.headers.origin)) {
+                    return ctx.headers.origin;
+                }
+            },
+            credentials: true,
+        })
+    );
     app.use(json());
     app.use(jwtSession({ keystore }));
     app.use(appSession({ keystore }));

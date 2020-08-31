@@ -1,6 +1,5 @@
 import * as Koa from "koa";
 import * as jose from "node-jose";
-import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import { JWTSessionState } from "./jwt-session";
 import { sign } from "../util/jwt-promise";
@@ -8,7 +7,7 @@ import { sign } from "../util/jwt-promise";
 export interface AppSession extends Record<string, unknown> {
     csrfToken: string;
     idToken?: string;
-    accessToken?: string;
+    accessTokenData?: Record<string, unknown>;
 }
 
 export interface AppSessionState {
@@ -43,13 +42,7 @@ export function appSession(opts: {
             const audience =
                 process.env.ACCESS_TOKEN_AUDIENCE ?? issuer + "resources";
 
-            const { accessToken } = ctx.state.appSession;
-            if (!accessToken) {
-                return null;
-            }
-            const accessTokenData = jsonwebtoken.decode(accessToken, {
-                json: true,
-            });
+            const { accessTokenData } = ctx.state.appSession;
             if (!accessTokenData) {
                 return null;
             }

@@ -4,6 +4,7 @@ import * as logger from "koa-logger";
 import * as json from "koa-json";
 import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
+import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
 import ms = require("ms");
@@ -155,7 +156,15 @@ const router = new Router();
                 throw new Error("No state data.");
             }
             const { appSession } = ctx.state;
-            appSession.accessToken = tokens?.accessToken;
+            if (tokens?.accessToken) {
+                const accessTokenData = jsonwebtoken.decode(
+                    tokens?.accessToken
+                );
+                if (accessTokenData) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    appSession.accessTokenData = accessTokenData as any;
+                }
+            }
             appSession.idToken = tokens?.idToken;
             const redirectParams: Record<string, string> = {
                 token: appSession.csrfToken,

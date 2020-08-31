@@ -46,11 +46,18 @@ const router = new Router();
 
     // Partial OpenID discovery document.
     router.get("/.well-known/openid-configuration", (ctx) => {
+        const baseUrl = ctx.request.href.replace(
+            /\/.well-known\/openid-configuration.*$/,
+            ""
+        );
+        const issuer = process.env.ISSUER ?? baseUrl + "/";
         ctx.body = {
-            jwks_uri: ctx.request.href.replace(
-                /\/openid-configuration/,
-                "/jwks.json"
-            ),
+            issuer,
+            jwks_uri: `${baseUrl}/.well-known/jwks.json`,
+            token_endpoint: `${baseUrl}/token`,
+            authorization_endpoint: `${baseUrl}/authorize`,
+            end_session_endpoint: `${baseUrl}/logout`,
+            userinfo_endpoint: `${baseUrl}/userinfo`,
         };
     });
 

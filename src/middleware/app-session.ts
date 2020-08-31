@@ -39,10 +39,9 @@ export function appSession(opts: {
         );
         ctx.state.generateAppAccessToken = async () => {
             const issuer =
-                process.env.ACCESS_TOKEN_ISSUER ??
+                process.env.ISSUER ??
                 ctx.request.href.replace(/^(https?:\/\/[^/]+).*$/, "$1/");
-            const audience =
-                process.env.ACCESS_TOKEN_AUDIENCE ?? issuer + "resources";
+            const audience = process.env.AUDIENCE ?? issuer + "resources";
 
             const { accessTokenData } = ctx.state.appSession;
             if (!accessTokenData) {

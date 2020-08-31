@@ -178,9 +178,89 @@ const router = new Router();
         }
     );
 
+    // The application requests a logout.
     router.get("/logout", (ctx: Koa.ParameterizedContext<AppSessionState>) => {
-        ctx.body = "staaaay";
+        const { appSession } = ctx.state;
+        const postLogoutRedirectUri = ctx.query.post_logout_redirect_uri;
+        if (postLogoutRedirectUri && !checkRedirect(postLogoutRedirectUri)) {
+            ctx.status = 403;
+            ctx.body = "Invalid post_logout_redirect_uri";
+            return;
+        }
+        if (oidcData.endpoints.endSession && appSession.idToken) {
+            // First log out of the external IdP.
+            const cookieOptions = {
+                httpOnly: true,
+                maxAge: ms("10m"),
+            };
+            ctx.cookies.set(
+                "oidc_logout_redirect_uri",
+                postLogoutRedirectUri ?? "",
+                cookieOptions
+            );
+            ctx.redirect(
+                oidcData.endpoints.endSession +
+                    "?" +
+                    querystring.stringify({
+                        id_token_hint: appSession.idToken,
+                        post_logout_redirect_uri: ctx.request.href.replace(
+                            /\/logout.*$/,
+                            "/logged-out"
+                        ),
+                    })
+            );
+            return;
+        }
+
+        // Log out right now.
+        delete appSession.idToken;
+        delete appSession.accessTokenData;
+        if (postLogoutRedirectUri) {
+            ctx.redirect(postLogoutRedirectUri);
+            return;
+        }
+        ctx.body = "You are logged out";
     });
+
+    // The OIDC IdP wants us to log out.
+    router.get(
+        "/front-channel-logout",
+        (ctx: Koa.ParameterizedContext<AppSessionState>) => {
+            // Clear our session.
+            const { appSession } = ctx.state;
+            delete appSession.idToken;
+            delete appSession.accessTokenData;
+            ctx.body = "";
+        }
+    );
+
+    // The OIDC IdP is done logging us out.
+    router.get(
+        "/logged-out",
+        (ctx: Koa.ParameterizedContext<AppSessionState>) => {
+            // Clear our session.
+            const { appSession } = ctx.state;
+            delete appSession.idToken;
+            delete appSession.accessTokenData;
+
+            const cookieName = "oidc_logout_redirect_uri";
+            const redirectUri = ctx.cookies.get(cookieName);
+
+            if (redirectUri) {
+                ctx.cookies.set(cookieName);
+                ctx.redirect(redirectUri);
+            }
+            ctx.body = "You are logged out";
+        }
+    );
+
+    router.get(
+        "/userinfo",
+        (ctx: Koa.ParameterizedContext<AppSessionState>) => {
+            // TODO
+            ctx.body = {};
+        }
+    );
 
     // Health check.
     router.get("/_health", (ctx) => {

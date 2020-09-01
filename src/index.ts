@@ -4,7 +4,6 @@ import * as logger from "koa-logger";
 import * as json from "koa-json";
 import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
-import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
 import ms = require("ms");
@@ -105,7 +104,7 @@ const router = new Router();
                     querystring.stringify({
                         ...queryParams,
                         response_type: "code",
-                        scope: oidcData.scope,
+                        scope: ctx.query.scope ?? "openid profile",
                         client_id: oidcData.credentials.clientId,
                         state,
                         redirect_uri: ctx.request.href.replace(
@@ -159,22 +158,7 @@ const router = new Router();
                 throw new Error("No state data.");
             }
             const { appSession } = ctx.state;
-            if (tokens?.accessToken) {
-                const accessTokenData = jsonwebtoken.decode(
-                    tokens?.accessToken
-                );
-                if (accessTokenData) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    appSession.accessTokenData = accessTokenData as any;
-                }
-                const userInfo = await fetchUserInfo(
-                    tokens.accessToken,
-                    oidcData
-                );
-                if (userInfo) {
-                    appSession.userInfo = userInfo;
-                }
-            }
+            appSession.accessToken = tokens?.accessToken;
             appSession.idToken = tokens?.idToken;
             const redirectParams: Record<string, string> = {
                 token: appSession.csrfToken,
@@ -262,8 +246,14 @@ const router = new Router();
     router.get(
         "/userinfo",
         csrfTokenAuth(),
-        (ctx: Koa.ParameterizedContext<AppSessionState>) => {
-            ctx.body = ctx.state.appSession.userInfo ?? {};
+        async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
+            const { accessToken } = ctx.state.appSession;
+            if (!accessToken) {
+                ctx.body = {};
+                return;
+            }
+            const userInfo = await fetchUserInfo(accessToken, oidcData);
+            ctx.body = userInfo;
         }
     );
 

@@ -4,6 +4,7 @@ import * as jwtPromise from "../util/jwt-promise";
 import { JwtHeader, SigningKeyCallback, SignOptions } from "jsonwebtoken";
 import ms = require("ms");
 import { isTruthy } from "../util/config";
+import { decompress, compress } from "../util/compress";
 
 interface JWTSessionOptions {
     keystore: jose.JWK.KeyStore;
@@ -153,8 +154,12 @@ export function jwtSession(
         ctx.state.jwtSession = sessionHandler;
 
         // Load data from our cookies.
-        const cookieHeaderPayload = ctx.cookies.get(cookieName);
-        const cookieSignature = ctx.cookies.get(signatureCookieName);
+        const cookieHeaderPayload = await decompress(
+            ctx.cookies.get(cookieName)
+        );
+        const cookieSignature = await decompress(
+            ctx.cookies.get(signatureCookieName)
+        );
         if (cookieHeaderPayload && cookieSignature) {
             await sessionHandler.setTokenCookieData({
                 headerPayload: cookieHeaderPayload,
@@ -168,12 +173,12 @@ export function jwtSession(
         const newCookieData = await sessionHandler.getTokenCookieData();
         if (newCookieData) {
             const { headerPayload, signature } = newCookieData;
-            ctx.cookies.set(cookieName, headerPayload, {
+            ctx.cookies.set(cookieName, await compress(headerPayload), {
                 secure: cookieSecure,
                 httpOnly: true,
                 maxAge: cookieMaxAge,
             });
-            ctx.cookies.set(signatureCookieName, signature, {
+            ctx.cookies.set(signatureCookieName, await compress(signature), {
                 secure: cookieSecure,
                 httpOnly: true,
             });

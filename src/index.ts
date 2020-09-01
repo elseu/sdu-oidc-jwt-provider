@@ -4,6 +4,7 @@ import * as logger from "koa-logger";
 import * as json from "koa-json";
 import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
+import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
 import ms = require("ms");
@@ -66,8 +67,11 @@ const router = new Router();
         csrfTokenAuth(),
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             const { generateAppAccessToken } = ctx.state;
+            const token = await generateAppAccessToken();
+            const claims = token ? jsonwebtoken.decode(token) : null;
             ctx.body = {
-                token: await generateAppAccessToken(),
+                token,
+                claims,
             };
         }
     );

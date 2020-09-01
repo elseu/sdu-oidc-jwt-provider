@@ -2,7 +2,7 @@ import * as Koa from "koa";
 import { AppSessionState } from "./app-session";
 
 export function csrfTokenAuth(): Koa.Middleware<AppSessionState> {
-    return (ctx, next) => {
+    return async (ctx, next) => {
         if (
             ctx.get("Authorization") !==
             `Bearer ${ctx.state.appSession.csrfToken}`
@@ -14,6 +14,6 @@ export function csrfTokenAuth(): Koa.Middleware<AppSessionState> {
             };
             return;
         }
-        next();
+        await next();
     };
 }

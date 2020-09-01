@@ -78,7 +78,6 @@ export function appSession(opts: {
             });
         };
         ctx.state.clearAppSession = () => {
-            ctx.state.appSession.csrfToken = generateCsrfToken();
             delete ctx.state.appSession.accessToken;
             delete ctx.state.appSession.idToken;
         };

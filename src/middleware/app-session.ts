@@ -74,8 +74,8 @@ export function appSession(opts: {
             });
         };
         ctx.state.clearAppSession = () => {
+            ctx.state.appSession.csrfToken = generateCsrfToken();
             delete ctx.state.appSession.accessTokenData;
-            delete ctx.state.appSession.csrfToken;
             delete ctx.state.appSession.idToken;
             delete ctx.state.appSession.userInfo;
         };
@@ -84,10 +84,14 @@ export function appSession(opts: {
     };
 }
 
+function generateCsrfToken(): string {
+    return randomstring.generate(16);
+}
+
 function sessionDataFromJWT(data: Record<string, unknown> | null): AppSession {
     const output: Partial<AppSession> = data ?? {};
     if (!output.csrfToken) {
-        output.csrfToken = randomstring.generate(16);
+        output.csrfToken = generateCsrfToken();
     }
     return output as AppSession;
 }

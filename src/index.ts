@@ -66,21 +66,7 @@ const router = new Router();
         "/token",
         csrfTokenAuth(),
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
-            const { appSession, generateAppAccessToken } = ctx.state;
-            let isAuthorized = false;
-            if (ctx.headers["authorization"]) {
-                const match = ctx.headers["authorization"].match(
-                    /^Bearer\s+(.*)$/
-                );
-                if (match) {
-                    isAuthorized = match[1] === appSession.csrfToken;
-                }
-            }
-            if (!isAuthorized) {
-                ctx.status = 403;
-                ctx.body = { error: "Invalid token" };
-                return;
-            }
+            const { generateAppAccessToken } = ctx.state;
             ctx.body = {
                 token: await generateAppAccessToken(),
             };

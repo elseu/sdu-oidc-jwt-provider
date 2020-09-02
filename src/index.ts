@@ -172,8 +172,9 @@ app.proxy = true;
             if (stateData.rs) {
                 redirectParams.state = stateData.rs;
             }
+            const separator = stateData.ru.indexOf("?") === -1 ? "?" : "&";
             ctx.redirect(
-                stateData.ru + "?" + querystring.stringify(redirectParams)
+                stateData.ru + separator + querystring.stringify(redirectParams)
             );
         }
     );

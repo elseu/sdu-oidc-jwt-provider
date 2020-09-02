@@ -19,7 +19,6 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.9.0",
     "koa": "^2.13.0",
-    "koa-compress": "^5.0.1",
     "koa-json": "^2.0.2",
     "koa-logger": "^3.2.1",
     "koa-router": "^9.4.0",
@@ -32,7 +31,6 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
     "@types/koa": "^2.11.4",
-    "@types/koa-compress": "^4.0.0",
     "@types/koa-json": "^2.0.18",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-router": "^7.4.1",

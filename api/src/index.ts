@@ -2,14 +2,11 @@ import * as Koa from "koa";
 import * as Router from "koa-router";
 import * as logger from "koa-logger";
 import * as json from "koa-json";
-import * as compress from "koa-compress";
 import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
 import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
-import { promises as fsPromise } from "fs";
-import * as path from "path";
 import ms = require("ms");
 
 import { loadKeystore } from "./util/keystore";
@@ -38,11 +35,6 @@ app.proxy = true;
     const keystore = await loadKeystore();
     const checkRedirect = await redirectChecker();
     const oidcData = await loadOidcData();
-    // TODO: minify? gzip?
-    const clientJavascript = await fsPromise.readFile(
-        path.join(".", "client", "index.js"),
-        "utf-8"
-    );
 
     const defaultCookieOptions = {
         httpOnly: true,
@@ -270,18 +262,6 @@ app.proxy = true;
             ctx.body = userInfo;
         }
     );
-
-    router.get("/client.js", compress(), async (ctx) => {
-        ctx.set("Content-type", "text/javascript");
-        const context = {
-            baseUrl: ctx.request.href.replace(/\/client.js.*$/, ""),
-            query: ctx.query,
-        };
-        ctx.body = clientJavascript.replace(
-            "__CONTEXT",
-            JSON.stringify(context)
-        );
-    });
 
     // Health check.
     router.get("/_health", (ctx) => {

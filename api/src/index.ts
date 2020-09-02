@@ -2,6 +2,7 @@ import * as Koa from "koa";
 import * as Router from "koa-router";
 import * as logger from "koa-logger";
 import * as json from "koa-json";
+import * as compress from "koa-compress";
 import * as cors from "@koa/cors";
 import * as dotenv from "dotenv";
 import * as jsonwebtoken from "jsonwebtoken";
@@ -270,7 +271,7 @@ app.proxy = true;
         }
     );
 
-    router.get("/client.js", async (ctx) => {
+    router.get("/client.js", compress(), async (ctx) => {
         ctx.set("Content-type", "text/javascript");
         const context = {
             baseUrl: ctx.request.href.replace(/\/client.js.*$/, ""),

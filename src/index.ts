@@ -7,6 +7,8 @@ import * as dotenv from "dotenv";
 import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
+import { promises as fsPromise } from "fs";
+import * as path from "path";
 import ms = require("ms");
 
 import { loadKeystore } from "./util/keystore";
@@ -27,12 +29,19 @@ dotenv.config();
 const app = new Koa();
 const router = new Router();
 
+app.proxy = true;
+
 (async () => {
     console.group("💥 Initializing...");
 
     const keystore = await loadKeystore();
     const checkRedirect = await redirectChecker();
     const oidcData = await loadOidcData();
+    // TODO: minify? gzip?
+    const clientJavascript = await fsPromise.readFile(
+        path.join(".", "client", "index.js"),
+        "utf-8"
+    );
 
     const defaultCookieOptions = {
         httpOnly: true,
@@ -260,6 +269,18 @@ const router = new Router();
             ctx.body = userInfo;
         }
     );
+
+    router.get("/client.js", async (ctx) => {
+        ctx.set("Content-type", "text/javascript");
+        const context = {
+            baseUrl: ctx.request.href.replace(/\/client.js.*$/, ""),
+            query: ctx.query,
+        };
+        ctx.body = clientJavascript.replace(
+            "__CONTEXT",
+            JSON.stringify(context)
+        );
+    });
 
     // Health check.
     router.get("/_health", (ctx) => {

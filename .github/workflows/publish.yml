@@ -33,9 +33,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION_SUFFIX=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/[^-]+//)
-          MAJOR_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\).*$/\\1/) | sed -E s/-.*$//
-          MINOR_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\.[0-9]+\).*$/\\1/) | sed -E s/-.*$//
-          FULL_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\.[0-9]+\.[0-9]+\).*$/\\1/) | sed -E s/-.*$//
+          MAJOR_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\).*$/\\1/ | sed -E s/-.*$//)
+          MINOR_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\.[0-9]+\).*$/\\1/ | sed -E s/-.*$//)
+          FULL_VERSION=$(echo ${GITHUB_REF/refs\/tags\/v/} | sed -E s/^\([0-9]+\.[0-9]+\.[0-9]+\).*$/\\1/ | sed -E s/-.*$//)
           if [ ! -z "$MAJOR_VERSION" ]; then
             docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$MAJOR_VERSION$VERSION_SUFFIX && docker push $DOCKER_IMAGE:$MAJOR_VERSION$VERSION_SUFFIX
           fi

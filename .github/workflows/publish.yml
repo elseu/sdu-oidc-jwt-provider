@@ -26,9 +26,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION_SUFFIX=$(echo ${GITHUB_REF/refs\/tags\//} | sed -E s/[^-]+//)
-          MAJOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\).*$/\\1/
-          MINOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\.[0-9]+\).*$/\\1/
-          FULL_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\.[0-9]+\.[0-9]+\).*$/\\1/
+          MAJOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^([0-9]+).*$/\\1/
+          MINOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^([0-9]+\.[0-9]+).*$/\\1/
+          FULL_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^([0-9]+\.[0-9]+\.[0-9]+).*$/\\1/
           echo "Major: $MAJOR_VERSION$VERSION_SUFFIX"
           echo "Minor: $MINOR_VERSION$VERSION_SUFFIX"
           echo "Full:  $FULL_VERSION$VERSION_SUFFIX"

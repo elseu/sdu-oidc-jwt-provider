@@ -13,22 +13,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Log in with Docker Hub
-        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      # - name: Log in with Docker Hub
+      #   run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
-      - name: Build docker image
-        run: docker build -t $DOCKER_IMAGE .
+      # - name: Build docker image
+      #   run: docker build -t $DOCKER_IMAGE .
 
-      - name: Push to latest
-        if: github.ref == 'refs/heads/master'
-        run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:latest && docker push $DOCKER_IMAGE:latest
-      # - name: Push to release tag
-      #   if: startsWith(github.ref, 'refs/tags/v')
-      #   run: |
-      #     RELEASE_TAG=${GITHUB_REF/refs\/tags\/v/}
-      #     docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$RELEASE_TAG && docker push $DOCKER_IMAGE:$RELEASE_TAG
-      # - name: Push to release branch
-      #   if: startsWith(github.ref, 'refs/heads/release/')
-      #   run: |
-      #     RELEASE_BRANCH=${GITHUB_REF/refs\/heads\/release\//}
-      #     docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$RELEASE_BRANCH && docker push $DOCKER_IMAGE:$RELEASE_BRANCH
+      # - name: Push to latest
+      #   if: github.ref == 'refs/heads/master'
+      #   run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:latest && docker push $DOCKER_IMAGE:latest
+      - name: Push to versions
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION_SUFFIX=$(echo ${GITHUB_REF/refs\/tags\//} | sed -E s/[^-]+//)
+          MAJOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\).*$/\\1/
+          MINOR_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\.[0-9]+\).*$/\\1/
+          FULL_VERSION=${GITHUB_REF/refs\/tags\//} | sed -E s/^\([0-9]+\.[0-9]+\.[0-9]+\).*$/\\1/
+          echo "Major: $MAJOR_VERSION$VERSION_SUFFIX"
+          echo "Minor: $MINOR_VERSION$VERSION_SUFFIX"
+          echo "Full:  $FULL_VERSION$VERSION_SUFFIX"

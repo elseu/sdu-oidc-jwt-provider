@@ -28,7 +28,7 @@ This requires that the backend services consume and validate access tokens in a 
 
 ## Install
 
-The best way to run this service is through Docker: `docker pull elssdu/oidc-jwt-provider:latest`.
+The best way to run this service is through Docker: `docker pull ghcr.io/elseu/sdu-oidc-jwt-provider:latest`.
 
 ### For development
 

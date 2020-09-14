@@ -110,7 +110,7 @@ app.proxy = true;
                     querystring.stringify({
                         ...queryParams,
                         response_type: "code",
-                        scope: ctx.query.scope ?? "openid profile",
+                        scope: oidcData.scope,
                         client_id: oidcData.credentials.clientId,
                         state,
                         redirect_uri: ctx.request.href.replace(

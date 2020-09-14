@@ -18,6 +18,7 @@ export interface OidcClientCredentials {
 export interface OidcData {
     endpoints: OidcEndpoints;
     credentials: OidcClientCredentials;
+    scope: string;
     jwksClient?: jwksRsa.JwksClient;
 }
 
@@ -39,8 +40,10 @@ export async function loadOidcData(): Promise<OidcData> {
     if (!process.env.OIDC_CLIENT_SECRET) {
         throw new Error("Need OIDC_CLIENT_SECRET");
     }
+    const scope = process.env.OIDC_SCOPE ?? "openid profile";
     const output: OidcData = {
         endpoints,
+        scope,
         credentials: {
             clientId: process.env.OIDC_CLIENT_ID,
             clientSecret: process.env.OIDC_CLIENT_SECRET,

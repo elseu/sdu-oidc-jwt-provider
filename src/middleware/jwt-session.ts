@@ -172,10 +172,12 @@ export function jwtSession(
                 secure: cookieSecure,
                 httpOnly: true,
                 maxAge: cookieMaxAge,
+                sameSite: "none",
             });
             ctx.cookies.set(signatureCookieName, signature, {
                 secure: cookieSecure,
                 httpOnly: true,
+                sameSite: "none",
             });
         } else if (cookieHeaderPayload && cookieSignature) {
             // Clear the cookies.

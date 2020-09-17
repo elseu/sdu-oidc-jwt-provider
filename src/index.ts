@@ -39,6 +39,7 @@ app.proxy = true;
     const defaultCookieOptions = {
         httpOnly: true,
         secure: isTruthy(process.env.COOKIES_SECURE ?? "true"),
+        sameSite: "none" as const,
     };
 
     // JWKS endpoint.

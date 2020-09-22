@@ -81,6 +81,7 @@ export function appSession(opts: {
         ctx.state.clearAppSession = () => {
             delete ctx.state.appSession.accessToken;
             delete ctx.state.appSession.idToken;
+            delete ctx.state.appSession.userInfo;
         };
         await next();
         ctx.state.jwtSession.setData(ctx.state.appSession);

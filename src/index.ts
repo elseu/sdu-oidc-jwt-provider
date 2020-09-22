@@ -167,6 +167,15 @@ app.proxy = true;
             const { appSession } = ctx.state;
             appSession.accessToken = tokens?.accessToken;
             appSession.idToken = tokens?.idToken;
+            if (appSession.accessToken) {
+                const userInfo = await fetchUserInfo(
+                    appSession.accessToken,
+                    oidcData
+                );
+                if (userInfo) {
+                    appSession.userInfo = userInfo;
+                }
+            }
             const redirectParams: Record<string, string> = {
                 token: appSession.csrfToken,
             };
@@ -255,13 +264,7 @@ app.proxy = true;
         "/userinfo",
         csrfTokenAuth(),
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
-            const { accessToken } = ctx.state.appSession;
-            if (!accessToken) {
-                ctx.body = {};
-                return;
-            }
-            const userInfo = await fetchUserInfo(accessToken, oidcData);
-            ctx.body = userInfo;
+            ctx.body = ctx.state.appSession.userInfo ?? {};
         }
     );
 

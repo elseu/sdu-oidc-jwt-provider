@@ -9,6 +9,7 @@ export interface AppSession extends Record<string, unknown> {
     csrfToken: string;
     idToken?: string;
     accessToken?: string;
+    userInfo?: Record<string, unknown>;
 }
 
 export interface AppSessionState {

@@ -182,10 +182,7 @@ app.proxy = true;
             if (stateData.rs) {
                 redirectParams.state = stateData.rs;
             }
-            const separator = stateData.ru.indexOf("?") === -1 ? "?" : "&";
-            ctx.redirect(
-                stateData.ru + separator + querystring.stringify(redirectParams)
-            );
+            ctx.redirect(urlWithExtraParams(stateData.ru, redirectParams));
         }
     );
 
@@ -299,3 +296,23 @@ app.proxy = true;
         console.log(`🚀 Listening on ${port}`);
     });
 })();
+
+/**
+ * Add extra query params to a URL, and handle cases like fragments an existing query string.
+ * @param url
+ * @param params
+ */
+function urlWithExtraParams(
+    url: string,
+    params: Record<string, string>
+): string {
+    const [urlWithoutHash, urlHash] = url.split("#", 2);
+    if (urlHash) {
+        return urlWithExtraParams(urlWithoutHash, params) + "#" + urlHash;
+    }
+    return (
+        urlWithoutHash +
+        (urlWithoutHash.indexOf("?") === -1 ? "?" : "&") +
+        querystring.stringify(params)
+    );
+}

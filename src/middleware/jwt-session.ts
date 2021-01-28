@@ -3,21 +3,15 @@ import * as jose from "node-jose";
 import * as jwtPromise from "../util/jwt-promise";
 import { JwtHeader, SigningKeyCallback, SignOptions } from "jsonwebtoken";
 import ms = require("ms");
+import {
+    ClientSession,
+    ClientSessionState,
+    SessionData,
+} from "./client-session";
 import { isTruthy } from "../util/config";
 
 interface JWTSessionOptions {
     keystore: jose.JWK.KeyStore;
-}
-
-export interface JWTSessionState {
-    jwtSession: JWTSession;
-}
-
-type JWTData = Record<string, unknown>;
-
-interface JWTSession {
-    getData(): JWTData | null;
-    setData(data: JWTData | null): void;
 }
 
 interface JWTSessionHandlerOptions extends JWTSessionOptions {
@@ -30,13 +24,13 @@ interface JWTCookieData {
     signature: string;
 }
 
-class JWTSessionHandler implements JWTSession {
+class JWTSessionHandler implements ClientSession {
     keystore!: jose.JWK.KeyStore;
     tokenExpiresIn!: string;
     algorithm!: string;
-    tokenData: JWTData | null;
+    tokenData: SessionData | null;
     cookieData: JWTCookieData | null;
-    cookieTokenPayload: JWTData | null;
+    cookieTokenPayload: SessionData | null;
 
     constructor(opts: JWTSessionHandlerOptions) {
         Object.assign(this, opts);
@@ -45,11 +39,11 @@ class JWTSessionHandler implements JWTSession {
         this.cookieTokenPayload = null;
     }
 
-    getData(): JWTData | null {
+    getData(): SessionData | null {
         return this.tokenData;
     }
 
-    setData(data: JWTData | null) {
+    setData(data: SessionData | null) {
         this.tokenData = data;
         this.cookieData = null;
     }
@@ -98,7 +92,7 @@ class JWTSessionHandler implements JWTSession {
                 true
             );
 
-            const tokenPayload: JWTData = { s: this.tokenData };
+            const tokenPayload: SessionData = { s: this.tokenData };
             const signOptions: SignOptions = {
                 keyid: signingKey.kid,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,7 +122,7 @@ class JWTSessionHandler implements JWTSession {
 
 export function jwtSession(
     opts: JWTSessionOptions
-): Koa.Middleware<JWTSessionState> {
+): Koa.Middleware<ClientSessionState> {
     const { keystore } = opts;
 
     // TODO: make configurable.
@@ -150,7 +144,7 @@ export function jwtSession(
             tokenExpiresIn,
             algorithm,
         });
-        ctx.state.jwtSession = sessionHandler;
+        ctx.state.clientSession = sessionHandler;
 
         // Load data from our cookies.
         const cookieHeaderPayload = ctx.cookies.get(cookieName);

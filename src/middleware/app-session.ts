@@ -2,7 +2,7 @@ import * as Koa from "koa";
 import * as jose from "node-jose";
 import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
-import { JWTSessionState } from "./jwt-session";
+import { ClientSessionState } from "./client-session";
 import { sign } from "../util/jwt-promise";
 
 export interface AppSession extends Record<string, unknown> {
@@ -20,7 +20,7 @@ export interface AppSessionState {
 
 export function appSession(opts: {
     keystore: jose.JWK.KeyStore;
-}): Koa.Middleware<JWTSessionState & AppSessionState> {
+}): Koa.Middleware<ClientSessionState & AppSessionState> {
     const { keystore } = opts;
     const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "5m";
     const accessTokenAlgorithm = process.env.ACCESS_TOKEN_ALGORITHM ?? "RS256";
@@ -36,7 +36,7 @@ export function appSession(opts: {
 
     return async (ctx, next) => {
         ctx.state.appSession = sessionDataFromJWT(
-            ctx.state.jwtSession.getData()
+            ctx.state.clientSession.getData()
         );
         ctx.state.generateAppAccessToken = async () => {
             const issuer =
@@ -84,7 +84,7 @@ export function appSession(opts: {
             delete ctx.state.appSession.userInfo;
         };
         await next();
-        ctx.state.jwtSession.setData(ctx.state.appSession);
+        ctx.state.clientSession.setData(ctx.state.appSession);
     };
 }
 

@@ -11,6 +11,7 @@ import ms = require("ms");
 
 import { loadKeystore } from "./util/keystore";
 import { jwtSession } from "./middleware/jwt-session";
+import { redisSession } from "./middleware/redis-session";
 import { isTruthy } from "./util/config";
 import { appSession, AppSessionState } from "./middleware/app-session";
 import { csrfTokenAuth } from "./middleware/csrf";
@@ -284,7 +285,19 @@ app.proxy = true;
         })
     );
     app.use(json());
-    app.use(jwtSession({ keystore }));
+    const sessionStorage = process.env.SESSION_STORAGE ?? "jwt";
+    switch (sessionStorage) {
+        case "jwt":
+            app.use(jwtSession({ keystore }));
+            break;
+        case "redis":
+            app.use(redisSession());
+            break;
+        default:
+            throw new Error(
+                `Invalid value for SESSION_STORAGE: ${sessionStorage}. Expect jwt,redis`
+            );
+    }
     app.use(appSession({ keystore }));
     app.use(router.middleware());
 

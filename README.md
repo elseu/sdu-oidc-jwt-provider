@@ -11,6 +11,7 @@ TODO
   - [For development](#for-development)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [FAQ](#faq)
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
@@ -54,6 +55,25 @@ You can configure the services through these environment variables:
 | -------------- | --------------------------------------------------------------------------------------------------------- |
 | `LOG_REQUESTS` | If set to `true` or `1`, all HTTP requests are logged to stdout.                                          |
 | `PORT`         | Port number to run the service on. Defaults to `3000`. The the Docker image sets this to `80` by default. | ` |
+
+
+## FAQ
+### How to use Redis for Session Storage?
+To use Redis for session management you can turn it on by setting `SESSION_STORAGE=redis` in your .env file.
+
+To start Redis locally using docker run `docker run --name oidc-jwt-provider-redis -d redis` in your terminal.
+After this you can set the Redis url in the .env file under `REDIS_URL=`.
+The default Redis url is set to `redis://localhost`.
+
+To use Redis in Production please contact your DevOps department.
+
+### How to generate a private signing key?
+You can generate a private signing key using OpenSSL or a similar service.
+Example: 
+```
+openssl genpkey -algorithm RSA -aes-256-cbc -outform PEM -out private_key.pem -pkeyopt rsa_keygen_bits:2048
+```
+For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.0/man1/genpkey.html#KEY-GENERATION-OPTIONS])
 
 ## Maintainers
 

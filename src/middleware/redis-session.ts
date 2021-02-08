@@ -61,7 +61,6 @@ class RedisSessionHandler implements ClientSession {
                 console.error(`Invalid session data: ${data}`);
             }
         }
-        console.log(`Session data:`, this.sessionData);
     }
 
     async storeData() {
@@ -135,7 +134,6 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
         // Load data from our cookies.
         const cookiePayload = ctx.cookies.get(cookieName);
         const cookieSignature = ctx.cookies.get(signatureCookieName);
-        console.log({ cookiePayload, cookieSignature });
         if (cookiePayload && cookieSignature) {
             await sessionHandler.setTokenCookieData({
                 payload: cookiePayload,
@@ -149,7 +147,6 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
 
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();
-        console.log({ newCookieData });
         if (newCookieData) {
             const { payload, signature } = newCookieData;
             ctx.cookies.set(cookieName, payload, {

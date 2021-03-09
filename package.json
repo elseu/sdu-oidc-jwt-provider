@@ -24,7 +24,7 @@
     "koa-router": "^9.4.0",
     "micromatch": "^4.0.2",
     "ms": "^2.1.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-jose": "^1.1.4",
     "randomstring": "^1.1.5",
     "redis": "^3.0.2"

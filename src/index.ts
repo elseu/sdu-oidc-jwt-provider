@@ -86,6 +86,7 @@ app.proxy = true;
         (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             if (
                 !ctx.query.redirect_uri ||
+                typeof ctx.query.redirect_uri !== "string" ||
                 !checkRedirect(ctx.query.redirect_uri)
             ) {
                 ctx.status = 400;
@@ -129,7 +130,7 @@ app.proxy = true;
         "/callback",
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             let tokens: OidcTokens | undefined;
-            if (ctx.query.code) {
+            if (ctx.query.code && typeof ctx.query.code === "string") {
                 // Fetch tokens from the OIDC endpoint.
                 try {
                     tokens = await fetchTokens(
@@ -190,7 +191,11 @@ app.proxy = true;
     // The application requests a logout.
     router.get("/logout", (ctx: Koa.ParameterizedContext<AppSessionState>) => {
         const { appSession } = ctx.state;
-        const postLogoutRedirectUri = ctx.query.post_logout_redirect_uri;
+        const postLogoutRedirectUri =
+            ctx.query.post_logout_redirect_uri &&
+            typeof ctx.query.post_logout_redirect_uri === "string"
+                ? ctx.query.post_logout_redirect_uri
+                : null;
         if (postLogoutRedirectUri && !checkRedirect(postLogoutRedirectUri)) {
             ctx.status = 403;
             ctx.body = "Invalid post_logout_redirect_uri";
@@ -280,6 +285,7 @@ app.proxy = true;
                 if (ctx.headers.origin && checkRedirect(ctx.headers.origin)) {
                     return ctx.headers.origin;
                 }
+                return "";
             },
             credentials: true,
         })

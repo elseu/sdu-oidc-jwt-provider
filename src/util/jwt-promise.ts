@@ -7,7 +7,7 @@ export function sign(
 ): Promise<string> {
     return new Promise((resolve, reject) => {
         const callback: jsonwebtoken.SignCallback = (err, result) => {
-            if (err) {
+            if (err || typeof result !== "string") {
                 reject(err);
             } else {
                 resolve(result);

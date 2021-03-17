@@ -41,6 +41,17 @@ npm run dev # to run nodemon and reload when you change code
 npm run start # to run in normal mode
 ```
 
+If you want to use Redis you can setup up a docker-compose.yml file and then run docker-compose up -d to start Redis.
+```yml
+version: "3"
+services:
+    redis:
+        image: "redis"
+        ports:
+            - 6379:6379
+
+```
+
 ## Usage
 
 TODO

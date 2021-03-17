@@ -2,3 +2,6 @@
 /dist
 /node_modules
 .env
+.idea
+.vscode
+*.pem

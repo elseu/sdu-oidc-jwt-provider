@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import * as jsonwebtoken from "jsonwebtoken";
 import * as randomstring from "randomstring";
 import * as querystring from "querystring";
+import * as Cookies from "cookies";
 import ms = require("ms");
 
 import { loadKeystore } from "./util/keystore";
@@ -37,10 +38,12 @@ app.proxy = true;
     const checkRedirect = await redirectChecker();
     const oidcData = await loadOidcData();
 
-    const defaultCookieOptions = {
+    const defaultCookieOptions: Cookies.SetOption = {
         httpOnly: true,
         secure: isTruthy(process.env.COOKIES_SECURE ?? "true"),
-        sameSite: "none" as const,
+        sameSite: isTruthy(process.env.COOKIES_SECURE ?? "true")
+            ? "none"
+            : "lax",
     };
 
     // JWKS endpoint.

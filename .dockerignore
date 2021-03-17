@@ -4,3 +4,7 @@
 /.github
 /k8s
 .env
+docker-compose.yml
+.idea
+.vscode
+*.pem

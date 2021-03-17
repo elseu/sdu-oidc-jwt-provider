@@ -4,3 +4,5 @@
 /.github
 /k8s
 .env
+docker-compose.yml
+.keys

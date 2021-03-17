@@ -109,6 +109,9 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
     const cookieMaxAge = ms(process.env.SESSION_MAX_INACTIVE ?? "30m");
     const sessionExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
+    const sameSite = isTruthy(process.env.COOKIES_SECURE ?? "true")
+        ? "none"
+        : "lax";
 
     const redisUrl = process.env.REDIS_URL ?? "redis://localhost";
     console.log(`Redis URL: ${redisUrl}`);
@@ -153,12 +156,12 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
                 secure: cookieSecure,
                 httpOnly: true,
                 maxAge: cookieMaxAge,
-                sameSite: "none",
+                sameSite,
             });
             ctx.cookies.set(signatureCookieName, signature, {
                 secure: cookieSecure,
                 httpOnly: true,
-                sameSite: "none",
+                sameSite,
             });
         } else if (cookiePayload && cookieSignature) {
             // Clear the cookies.

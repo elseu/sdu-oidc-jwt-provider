@@ -10,6 +10,7 @@ import * as querystring from "querystring";
 import * as Cookies from "cookies";
 import ms = require("ms");
 
+import { noCache } from "./middleware/no-cache";
 import { loadKeystore } from "./util/keystore";
 import { jwtSession } from "./middleware/jwt-session";
 import { redisSession } from "./middleware/redis-session";
@@ -307,6 +308,8 @@ app.proxy = true;
                 `Invalid value for SESSION_STORAGE: ${sessionStorage}. Expect jwt,redis`
             );
     }
+
+    app.use(noCache());
     app.use(appSession({ keystore }));
     app.use(router.middleware());
 

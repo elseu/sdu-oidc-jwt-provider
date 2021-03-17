@@ -41,7 +41,7 @@ npm run dev # to run nodemon and reload when you change code
 npm run start # to run in normal mode
 ```
 
-If you want to use Redis as session storage you can use the docker-compose.yml file and then run docker-compose up -d to start Redis.
+If you want to use Redis as session storage you can use the docker-compose.yml file and then run `docker-compose up -d` to start Redis.
 ## Usage
 
 TODO

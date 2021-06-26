@@ -5,7 +5,8 @@ export function csrfTokenAuth(): Koa.Middleware<AppSessionState> {
     return async (ctx, next) => {
         if (
             ctx.get("Authorization") !==
-            `Bearer ${ctx.state.appSession.csrfToken}`
+                `Bearer ${ctx.state.appSession.csrfToken}` &&
+            ctx.query.token !== ctx.state.appSession.csrfToken
         ) {
             ctx.status = 403;
             ctx.body = {

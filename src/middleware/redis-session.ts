@@ -109,6 +109,9 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
     const cookieMaxAge = ms(process.env.SESSION_MAX_INACTIVE ?? "30m");
     const sessionExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
+    const sessionExpireOnBrowserRestart = isTruthy(
+        process.env.SESSION_EXPIRE_ON_BROWSER_RESTART ?? "true"
+    );
     const sameSite = isTruthy(process.env.COOKIES_SECURE ?? "true")
         ? "none"
         : "lax";
@@ -161,6 +164,9 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
             ctx.cookies.set(signatureCookieName, signature, {
                 secure: cookieSecure,
                 httpOnly: true,
+                ...(sessionExpireOnBrowserRestart
+                    ? {}
+                    : { maxAge: cookieMaxAge }),
                 sameSite,
             });
         } else if (cookiePayload && cookieSignature) {

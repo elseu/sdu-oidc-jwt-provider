@@ -175,7 +175,7 @@ export function jwtSession(
             ctx.cookies.set(signatureCookieName, signature, {
                 secure: cookieSecure,
                 httpOnly: true,
-                ...(sessionCookie ? { maxAge: cookieMaxAge } : {}),
+                ...(sessionCookie ? {} : { maxAge: cookieMaxAge }),
                 sameSite,
             });
         } else if (cookieHeaderPayload && cookieSignature) {

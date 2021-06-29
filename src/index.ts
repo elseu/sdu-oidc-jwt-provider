@@ -84,6 +84,8 @@ app.proxy = true;
         }
     );
 
+    router.get("/metrics");
+
     // Authorize through the OIDC IdP.
     router.get(
         "/authorize",

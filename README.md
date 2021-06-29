@@ -52,10 +52,11 @@ TODO
 
 You can configure the services through these environment variables:
 
-| Variable       | Usage                                                                                                     |
-| -------------- | --------------------------------------------------------------------------------------------------------- |
-| `LOG_REQUESTS` | If set to `true` or `1`, all HTTP requests are logged to stdout.                                          |
-| `PORT`         | Port number to run the service on. Defaults to `3000`. The the Docker image sets this to `80` by default. | ` |
+| Variable         | Usage                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `LOG_REQUESTS`   | If set to `true` or `1`, all HTTP requests are logged to stdout.                                          |
+| `PORT`           | Port number to run the service on. Defaults to `3000`. The the Docker image sets this to `80` by default. | ` |
+| `SESSION_COOKIE` | If set to `true` or `1`, the session will be only valid in a browser session because the cookies will be saved as a session cookie |
 
 
 ## FAQ

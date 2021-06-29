@@ -131,7 +131,9 @@ export function jwtSession(
     const tokenExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const algorithm = process.env.SESSION_SIGNATURE_ALGORITHM ?? "RS256";
     const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
-    const sessionCookie = isTruthy(process.env.SESSION_COOKIE ?? "true");
+    const sessionExpireOnBrowserRestart = isTruthy(
+        process.env.SESSION_EXPIRE_ON_BROWSER_RESTART ?? "true"
+    );
     const sameSite = isTruthy(process.env.COOKIES_SECURE ?? "true")
         ? "none"
         : "lax";
@@ -175,7 +177,9 @@ export function jwtSession(
             ctx.cookies.set(signatureCookieName, signature, {
                 secure: cookieSecure,
                 httpOnly: true,
-                ...(sessionCookie ? {} : { maxAge: cookieMaxAge }),
+                ...(sessionExpireOnBrowserRestart
+                    ? {}
+                    : { maxAge: cookieMaxAge }),
                 sameSite,
             });
         } else if (cookieHeaderPayload && cookieSignature) {

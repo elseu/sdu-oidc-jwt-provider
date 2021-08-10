@@ -155,8 +155,8 @@ app.proxy = true;
             const stateCookie = ctx.cookies.get(stateCookieName);
 
             // Clear the state cookies.
-            ctx.cookies.set("oidc_state_last");
-            ctx.cookies.set(stateCookieName);
+            ctx.cookies.set("oidc_state_last", null, defaultCookieOptions);
+            ctx.cookies.set(stateCookieName, null, defaultCookieOptions);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let stateData: any;
@@ -260,7 +260,7 @@ app.proxy = true;
             const redirectUri = ctx.cookies.get(cookieName);
 
             if (redirectUri) {
-                ctx.cookies.set(cookieName);
+                ctx.cookies.set(cookieName, null, defaultCookieOptions);
                 ctx.redirect(redirectUri);
             }
             ctx.body = "You are logged out";

@@ -1,4 +1,5 @@
 import * as Koa from "koa";
+import * as Cookies from "cookies";
 import * as randomstring from "randomstring";
 import { createClient, RedisClient } from "redis";
 import ms = require("ms");
@@ -151,28 +152,30 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
         await next();
         await sessionHandler.storeData();
 
+        const defaultCookieOptions: Cookies.SetOption = {
+            secure: cookieSecure,
+            httpOnly: true,
+            sameSite,
+        };
+
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();
         if (newCookieData) {
             const { payload, signature } = newCookieData;
             ctx.cookies.set(cookieName, payload, {
-                secure: cookieSecure,
-                httpOnly: true,
+                ...defaultCookieOptions,
                 maxAge: cookieMaxAge,
-                sameSite,
             });
             ctx.cookies.set(signatureCookieName, signature, {
-                secure: cookieSecure,
-                httpOnly: true,
+                ...defaultCookieOptions,
                 ...(sessionExpireOnBrowserRestart
                     ? {}
                     : { maxAge: cookieMaxAge }),
-                sameSite,
             });
         } else if (cookiePayload && cookieSignature) {
             // Clear the cookies.
-            ctx.cookies.set(cookieName);
-            ctx.cookies.set(signatureCookieName);
+            ctx.cookies.set(cookieName, null, defaultCookieOptions);
+            ctx.cookies.set(signatureCookieName, null, defaultCookieOptions);
         }
     };
 }

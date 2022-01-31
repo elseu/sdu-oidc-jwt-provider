@@ -24,6 +24,7 @@ import {
     fetchUserInfo,
     OidcTokens,
 } from "./util/oidc";
+import { applySameSiteFix } from "./util/samesite-cookiefix";
 
 dotenv.config();
 
@@ -102,10 +103,10 @@ app.proxy = true;
                 rs: ctx.query.state || null,
                 ru: ctx.query.redirect_uri,
             });
-            const cookieOptions = {
+            const cookieOptions = applySameSiteFix(ctx, {
                 ...defaultCookieOptions,
                 maxAge: ms("30m"),
-            };
+            });
             const queryParams = { ...ctx.query };
             delete queryParams.redirect_uri;
 
@@ -154,9 +155,11 @@ app.proxy = true;
             const stateCookieName = "oidc_state_" + stateKey;
             const stateCookie = ctx.cookies.get(stateCookieName);
 
+            const cookieOptions = applySameSiteFix(ctx, defaultCookieOptions);
+
             // Clear the state cookies.
-            ctx.cookies.set("oidc_state_last", null, defaultCookieOptions);
-            ctx.cookies.set(stateCookieName, null, defaultCookieOptions);
+            ctx.cookies.set("oidc_state_last", null, cookieOptions);
+            ctx.cookies.set(stateCookieName, null, cookieOptions);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let stateData: any;
@@ -207,10 +210,10 @@ app.proxy = true;
         }
         if (oidcData.endpoints.endSession && appSession.idToken) {
             // First log out of the external IdP.
-            const cookieOptions = {
+            const cookieOptions = applySameSiteFix(ctx, {
                 ...defaultCookieOptions,
                 maxAge: ms("10m"),
-            };
+            });
             ctx.cookies.set(
                 "oidc_logout_redirect_uri",
                 postLogoutRedirectUri ?? "",
@@ -259,8 +262,10 @@ app.proxy = true;
             const cookieName = "oidc_logout_redirect_uri";
             const redirectUri = ctx.cookies.get(cookieName);
 
+            const cookieOptions = applySameSiteFix(ctx, defaultCookieOptions);
+
             if (redirectUri) {
-                ctx.cookies.set(cookieName, null, defaultCookieOptions);
+                ctx.cookies.set(cookieName, null, cookieOptions);
                 ctx.redirect(redirectUri);
             }
             ctx.body = "You are logged out";

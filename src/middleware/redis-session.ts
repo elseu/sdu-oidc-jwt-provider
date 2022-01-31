@@ -1,5 +1,4 @@
 import * as Koa from "koa";
-import * as Cookies from "cookies";
 import * as randomstring from "randomstring";
 import { createClient, RedisClient } from "redis";
 import ms = require("ms");

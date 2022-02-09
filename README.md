@@ -75,7 +75,25 @@ Example:
 ```
 openssl genpkey -algorithm RSA -aes-256-cbc -outform PEM -out private_key.pem -pkeyopt rsa_keygen_bits:2048
 ```
-For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.0/man1/genpkey.html#KEY-GENERATION-OPTIONS])
+For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.0/man1/genpkey.html#KEY-GENERATION-OPTIONS)
+
+
+#### Alternative way to generate a key
+Run in terminal:
+```brew install mkcert`
+
+Then type:
+```mkcert -install```
+
+Followed by:
+```mkcert yourSiteName```
+
+Replace `yourSiteName` with any name of your website. For example: download-site-acc
+
+This will generate 2 files: `{yourSiteName}.pem` and `{yourSiteName}-key.pem`.
+
+Now base64 encode the file and you have your base64 encoded signing key.
+```cat `{yourSiteName}-key.pem | base64```
 
 ## Maintainers
 

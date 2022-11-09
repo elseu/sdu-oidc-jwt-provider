@@ -75,7 +75,7 @@ Example:
 ```
 openssl genpkey -algorithm RSA -aes-256-cbc -outform PEM -out private_key.pem -pkeyopt rsa_keygen_bits:2048
 ```
-For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.0/man1/genpkey.html#KEY-GENERATION-OPTIONS])
+For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.1/man1/openssl-genpkey.html#KEY-GENERATION-OPTIONS)
 
 ## Maintainers
 

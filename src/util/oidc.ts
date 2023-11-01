@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import * as querystring from "querystring";
 import * as jwksRsa from "jwks-rsa";
+import { isTruthy } from "./config";
 
 export interface OidcEndpoints {
     authorization: string;
@@ -66,21 +67,36 @@ export async function fetchTokens(
     oidcData: OidcData
 ): Promise<OidcTokens> {
     const { clientId, clientSecret } = oidcData.credentials;
+    const shouldUseBody = isTruthy(
+        process.env.OIDC_CODE_EXCHANGE_CREDENTIALS_BODY ?? "true"
+    );
+    const contentType = { "Content-Type": "application/x-www-form-urlencoded" };
+    const headers = shouldUseBody
+        ? contentType
+        : {
+              ...contentType,
+              Authorization:
+                  "Basic " +
+                  Buffer.from(clientId + ":" + clientSecret, "utf-8").toString(
+                      "base64"
+                  ),
+          };
+    const data = {
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+    };
+    const body = shouldUseBody
+        ? {
+              ...data,
+              client_id: clientId,
+              client_secret: clientSecret,
+          }
+        : data;
     const response = await fetch(oidcData.endpoints.token, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization:
-                "Basic " +
-                Buffer.from(clientId + ":" + clientSecret, "utf-8").toString(
-                    "base64"
-                ),
-        },
-        body: querystring.stringify({
-            grant_type: "authorization_code",
-            code,
-            redirect_uri: redirectUri,
-        }),
+        headers,
+        body: querystring.stringify(body),
     });
     const tokens = await response.json();
     if (!tokens || !tokens.access_token || !tokens.id_token) {

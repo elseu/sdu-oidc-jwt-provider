@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1beta1
+kind: Component
+metadata:
+  name: sdu-oidc-jwt-provider
+  description: "Provide JWTs for API access from an OpenID Connect backend"
+  annotations:
+    github.com/project-slug: elseu/sdu-oidc-jwt-provider
+    backstage.io/source-location: url:https://github.com/elseu/sdu-oidc-jwt-provider/
+  tags:
+    - typescript
+    - critical-component
+spec:
+  type: unspecified
+  owner: team-auth-onboarding
+  lifecycle: unspecified

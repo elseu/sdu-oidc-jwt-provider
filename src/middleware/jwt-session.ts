@@ -1,5 +1,4 @@
 import * as Koa from "koa";
-import * as Cookies from "cookies";
 import * as jose from "node-jose";
 import * as jwtPromise from "../util/jwt-promise";
 import { JwtHeader, SigningKeyCallback, SignOptions } from "jsonwebtoken";
@@ -10,6 +9,7 @@ import {
     SessionData,
 } from "./client-session";
 import { isTruthy } from "../util/config";
+import { applySameSiteFix } from "../util/samesite-cookiefix";
 
 interface JWTSessionOptions {
     keystore: jose.JWK.KeyStore;
@@ -165,11 +165,11 @@ export function jwtSession(
 
         await next();
 
-        const defaultCookieOptions: Cookies.SetOption = {
+        const defaultCookieOptions = applySameSiteFix(ctx, {
             secure: cookieSecure,
             httpOnly: true,
             sameSite,
-        };
+        });
 
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();

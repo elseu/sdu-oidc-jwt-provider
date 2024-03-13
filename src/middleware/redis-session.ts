@@ -1,5 +1,4 @@
 import * as Koa from "koa";
-import * as Cookies from "cookies";
 import * as randomstring from "randomstring";
 import { createClient, RedisClient } from "redis";
 import ms = require("ms");
@@ -10,6 +9,7 @@ import {
     SessionData,
 } from "./client-session";
 import { isTruthy } from "../util/config";
+import { applySameSiteFix } from "../util/samesite-cookiefix";
 
 interface RedisSessionHandlerOptions {
     client: RedisClient;
@@ -152,11 +152,11 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
         await next();
         await sessionHandler.storeData();
 
-        const defaultCookieOptions: Cookies.SetOption = {
+        const defaultCookieOptions = applySameSiteFix(ctx, {
             secure: cookieSecure,
             httpOnly: true,
             sameSite,
-        };
+        });
 
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();

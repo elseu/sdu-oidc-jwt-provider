@@ -28,6 +28,7 @@ dotenv.config();
 
 const app = new Koa();
 const router = new Router();
+const statusRouter = new Router();
 
 app.proxy = true;
 
@@ -45,6 +46,11 @@ app.proxy = true;
             ? "none"
             : "lax",
     };
+
+    // Health check.
+    statusRouter.get("/_health", (ctx) => {
+        ctx.body = "OK";
+    });
 
     // JWKS endpoint.
     router.get("/.well-known/jwks.json", (ctx) => {
@@ -274,11 +280,6 @@ app.proxy = true;
         }
     );
 
-    // Health check.
-    router.get("/_health", (ctx) => {
-        ctx.body = "OK";
-    });
-
     if (isTruthy(process.env.LOG_REQUESTS)) {
         app.use(logger());
     }
@@ -294,6 +295,8 @@ app.proxy = true;
         })
     );
     app.use(json());
+    app.use(statusRouter.routes()).use(statusRouter.allowedMethods());
+
     const sessionStorage = process.env.SESSION_STORAGE ?? "jwt";
     switch (sessionStorage) {
         case "jwt":
@@ -308,7 +311,7 @@ app.proxy = true;
             );
     }
     app.use(appSession({ keystore }));
-    app.use(router.middleware());
+    app.use(router.routes()).use(router.allowedMethods());
 
     const port = parseInt(process.env.PORT ?? "3000");
 

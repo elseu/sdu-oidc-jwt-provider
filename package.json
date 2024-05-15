@@ -14,7 +14,7 @@
   "author": "Sebastiaan Besselsen <s.besselsen@sdu.nl>",
   "license": "MIT",
   "dependencies": {
-    "@koa/cors": "^3.1.0",
+    "@koa/cors": "^5.0.0",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.12.3",

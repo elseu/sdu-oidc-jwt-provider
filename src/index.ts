@@ -10,6 +10,7 @@ import * as querystring from "querystring";
 import * as Cookies from "cookies";
 import ms = require("ms");
 
+import { noCache } from "./middleware/no-cache";
 import { loadKeystore } from "./util/keystore";
 import { jwtSession } from "./middleware/jwt-session";
 import { redisSession } from "./middleware/redis-session";
@@ -160,8 +161,8 @@ app.proxy = true;
             const stateCookie = ctx.cookies.get(stateCookieName);
 
             // Clear the state cookies.
-            ctx.cookies.set("oidc_state_last");
-            ctx.cookies.set(stateCookieName);
+            ctx.cookies.set("oidc_state_last", null, defaultCookieOptions);
+            ctx.cookies.set(stateCookieName, null, defaultCookieOptions);
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let stateData: any;
@@ -265,7 +266,7 @@ app.proxy = true;
             const redirectUri = ctx.cookies.get(cookieName);
 
             if (redirectUri) {
-                ctx.cookies.set(cookieName);
+                ctx.cookies.set(cookieName, null, defaultCookieOptions);
                 ctx.redirect(redirectUri);
             }
             ctx.body = "You are logged out";
@@ -295,7 +296,6 @@ app.proxy = true;
         })
     );
     app.use(json());
-    app.use(statusRouter.routes()).use(statusRouter.allowedMethods());
 
     const sessionStorage = process.env.SESSION_STORAGE ?? "jwt";
     switch (sessionStorage) {
@@ -310,7 +310,10 @@ app.proxy = true;
                 `Invalid value for SESSION_STORAGE: ${sessionStorage}. Expect jwt,redis`
             );
     }
+
+    app.use(noCache());
     app.use(appSession({ keystore }));
+    app.use(statusRouter.routes()).use(statusRouter.allowedMethods());
     app.use(router.routes()).use(router.allowedMethods());
 
     const port = parseInt(process.env.PORT ?? "3000");

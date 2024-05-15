@@ -52,10 +52,11 @@ TODO
 
 You can configure the services through these environment variables:
 
-| Variable       | Usage                                                                                                     |
-| -------------- | --------------------------------------------------------------------------------------------------------- |
-| `LOG_REQUESTS` | If set to `true` or `1`, all HTTP requests are logged to stdout.                                          |
-| `PORT`         | Port number to run the service on. Defaults to `3000`. The the Docker image sets this to `80` by default. | ` |
+| Variable         | Usage                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `LOG_REQUESTS`   | If set to `true` or `1`, all HTTP requests are logged to stdout.                                          |
+| `PORT`           | Port number to run the service on. Defaults to `3000`. The the Docker image sets this to `80` by default. | ` |
+| `SESSION_EXPIRE_ON_BROWSER_RESTART` | If set to `true` or `1`, the session will be only valid in a browser session because the cookies will be saved as a session cookie |
 
 
 ## FAQ
@@ -74,7 +75,25 @@ Example:
 ```
 openssl genpkey -algorithm RSA -aes-256-cbc -outform PEM -out private_key.pem -pkeyopt rsa_keygen_bits:2048
 ```
-For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.0/man1/genpkey.html#KEY-GENERATION-OPTIONS])
+For explanation of the options check the [OpenSSL documentation](https://www.openssl.org/docs/man1.1.1/man1/openssl-genpkey.html#KEY-GENERATION-OPTIONS)
+
+
+#### Alternative way to generate a key
+Run in terminal:
+```brew install mkcert`
+
+Then type:
+```mkcert -install```
+
+Followed by:
+```mkcert yourSiteName```
+
+Replace `yourSiteName` with any name of your website. For example: download-site-acc
+
+This will generate 2 files: `{yourSiteName}.pem` and `{yourSiteName}-key.pem`.
+
+Now base64 encode the file and you have your base64 encoded signing key.
+```cat `{yourSiteName}-key.pem | base64```
 
 ## Maintainers
 

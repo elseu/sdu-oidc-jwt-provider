@@ -1,4 +1,5 @@
 import * as Koa from "koa";
+import * as Cookies from "cookies";
 import * as jose from "node-jose";
 import * as jwtPromise from "../util/jwt-promise";
 import { JwtHeader, SigningKeyCallback, SignOptions } from "jsonwebtoken";
@@ -131,6 +132,9 @@ export function jwtSession(
     const tokenExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const algorithm = process.env.SESSION_SIGNATURE_ALGORITHM ?? "RS256";
     const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
+    const sessionExpireOnBrowserRestart = isTruthy(
+        process.env.SESSION_EXPIRE_ON_BROWSER_RESTART ?? "true"
+    );
     const sameSite = isTruthy(process.env.COOKIES_SECURE ?? "true")
         ? "none"
         : "lax";
@@ -161,25 +165,30 @@ export function jwtSession(
 
         await next();
 
+        const defaultCookieOptions: Cookies.SetOption = {
+            secure: cookieSecure,
+            httpOnly: true,
+            sameSite,
+        };
+
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();
         if (newCookieData) {
             const { headerPayload, signature } = newCookieData;
             ctx.cookies.set(cookieName, headerPayload, {
-                secure: cookieSecure,
-                httpOnly: true,
+                ...defaultCookieOptions,
                 maxAge: cookieMaxAge,
-                sameSite,
             });
             ctx.cookies.set(signatureCookieName, signature, {
-                secure: cookieSecure,
-                httpOnly: true,
-                sameSite,
+                ...defaultCookieOptions,
+                ...(sessionExpireOnBrowserRestart
+                    ? {}
+                    : { maxAge: cookieMaxAge }),
             });
         } else if (cookieHeaderPayload && cookieSignature) {
             // Clear the cookies.
-            ctx.cookies.set(cookieName);
-            ctx.cookies.set(signatureCookieName);
+            ctx.cookies.set(cookieName, null, defaultCookieOptions);
+            ctx.cookies.set(signatureCookieName, null, defaultCookieOptions);
         }
     };
 }

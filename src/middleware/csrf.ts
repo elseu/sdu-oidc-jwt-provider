@@ -26,7 +26,8 @@ export function csrfOrAccessTokenAuth(
     return async (ctx, next) => {
         if (
             ctx.get("Authorization") ===
-            `Bearer ${ctx.state.appSession.csrfToken}`
+                `Bearer ${ctx.state.appSession.csrfToken}` ||
+            ctx.query.token === ctx.state.appSession.csrfToken
         ) {
             await next();
             return;

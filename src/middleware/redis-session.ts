@@ -1,4 +1,5 @@
 import * as Koa from "koa";
+import * as Cookies from "cookies";
 import * as randomstring from "randomstring";
 import { createClient, RedisClient } from "redis";
 import ms = require("ms");
@@ -109,6 +110,9 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
     const cookieMaxAge = ms(process.env.SESSION_MAX_INACTIVE ?? "30m");
     const sessionExpiresIn = process.env.SESSION_MAX_AGE ?? "1d";
     const cookieSecure = isTruthy(process.env.COOKIES_SECURE ?? "true");
+    const sessionExpireOnBrowserRestart = isTruthy(
+        process.env.SESSION_EXPIRE_ON_BROWSER_RESTART ?? "true"
+    );
     const sameSite = isTruthy(process.env.COOKIES_SECURE ?? "true")
         ? "none"
         : "lax";
@@ -148,25 +152,30 @@ export function redisSession(): Koa.Middleware<ClientSessionState> {
         await next();
         await sessionHandler.storeData();
 
+        const defaultCookieOptions: Cookies.SetOption = {
+            secure: cookieSecure,
+            httpOnly: true,
+            sameSite,
+        };
+
         // Store data back into cookies.
         const newCookieData = await sessionHandler.getTokenCookieData();
         if (newCookieData) {
             const { payload, signature } = newCookieData;
             ctx.cookies.set(cookieName, payload, {
-                secure: cookieSecure,
-                httpOnly: true,
+                ...defaultCookieOptions,
                 maxAge: cookieMaxAge,
-                sameSite,
             });
             ctx.cookies.set(signatureCookieName, signature, {
-                secure: cookieSecure,
-                httpOnly: true,
-                sameSite,
+                ...defaultCookieOptions,
+                ...(sessionExpireOnBrowserRestart
+                    ? {}
+                    : { maxAge: cookieMaxAge }),
             });
         } else if (cookiePayload && cookieSignature) {
             // Clear the cookies.
-            ctx.cookies.set(cookieName);
-            ctx.cookies.set(signatureCookieName);
+            ctx.cookies.set(cookieName, null, defaultCookieOptions);
+            ctx.cookies.set(signatureCookieName, null, defaultCookieOptions);
         }
     };
 }

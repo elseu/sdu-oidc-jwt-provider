@@ -16,7 +16,7 @@ import { jwtSession } from "./middleware/jwt-session";
 import { redisSession } from "./middleware/redis-session";
 import { isTruthy } from "./util/config";
 import { appSession, AppSessionState } from "./middleware/app-session";
-import { csrfTokenAuth } from "./middleware/csrf";
+import { csrfOrAccessTokenAuth } from "./middleware/csrf";
 import { redirectChecker } from "./util/redirect-check";
 import {
     loadOidcData,
@@ -29,6 +29,7 @@ dotenv.config();
 
 const app = new Koa();
 const router = new Router();
+const statusRouter = new Router();
 
 app.proxy = true;
 
@@ -46,6 +47,11 @@ app.proxy = true;
             ? "none"
             : "lax",
     };
+
+    // Health check.
+    statusRouter.get("/_health", (ctx) => {
+        ctx.body = "OK";
+    });
 
     // JWKS endpoint.
     router.get("/.well-known/jwks.json", (ctx) => {
@@ -72,7 +78,7 @@ app.proxy = true;
     // Get a usable access token, *if* we have a session.
     router.get(
         "/token",
-        csrfTokenAuth(),
+        csrfOrAccessTokenAuth(),
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             const { generateAppAccessToken } = ctx.state;
             const token = await generateAppAccessToken();
@@ -269,16 +275,11 @@ app.proxy = true;
 
     router.get(
         "/userinfo",
-        csrfTokenAuth(),
+        csrfOrAccessTokenAuth({ keystore }),
         async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
             ctx.body = ctx.state.appSession.userInfo ?? {};
         }
     );
-
-    // Health check.
-    router.get("/_health", (ctx) => {
-        ctx.body = "OK";
-    });
 
     if (isTruthy(process.env.LOG_REQUESTS)) {
         app.use(logger());
@@ -295,6 +296,7 @@ app.proxy = true;
         })
     );
     app.use(json());
+
     const sessionStorage = process.env.SESSION_STORAGE ?? "jwt";
     switch (sessionStorage) {
         case "jwt":
@@ -311,7 +313,8 @@ app.proxy = true;
 
     app.use(noCache());
     app.use(appSession({ keystore }));
-    app.use(router.middleware());
+    app.use(statusRouter.routes()).use(statusRouter.allowedMethods());
+    app.use(router.routes()).use(router.allowedMethods());
 
     const port = parseInt(process.env.PORT ?? "3000");
 

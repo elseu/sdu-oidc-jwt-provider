@@ -15,7 +15,7 @@ import { jwtSession } from "./middleware/jwt-session";
 import { redisSession } from "./middleware/redis-session";
 import { isTruthy } from "./util/config";
 import { appSession, AppSessionState } from "./middleware/app-session";
-import { csrfTokenAuth } from "./middleware/csrf";
+import { csrfOrAccessTokenAuth } from "./middleware/csrf";
 import { redirectChecker } from "./util/redirect-check";
 import {
   loadOidcData,
@@ -75,7 +75,7 @@ app.proxy = true;
   // Get a usable access token, *if* we have a session.
   router.get(
     "/token",
-    csrfTokenAuth(),
+    csrfOrAccessTokenAuth(),
     async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
       const { generateAppAccessToken } = ctx.state;
       const token = await generateAppAccessToken();
@@ -262,7 +262,7 @@ app.proxy = true;
 
   router.get(
     "/userinfo",
-    csrfTokenAuth(),
+    csrfOrAccessTokenAuth({ keystore }),
     async (ctx: Koa.ParameterizedContext<AppSessionState>) => {
       ctx.body = ctx.state.appSession.userInfo ?? {};
     }

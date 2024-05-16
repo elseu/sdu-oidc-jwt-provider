@@ -1,8 +1,6 @@
 import * as Koa from "koa";
-import { AppSessionState } from "./app-session";
-import { verify } from "../util/jwt-promise";
-import { JwtHeader, SigningKeyCallback } from "jsonwebtoken";
 import * as jose from "node-jose";
+import { AppSessionState } from "./app-session";
 
 function getTokenFromContext(ctx: Koa.DefaultContext): string | null {
   const authHeader = ctx.headers.authorization;
@@ -35,26 +33,17 @@ export function csrfOrAccessTokenAuth(
     const token = getTokenFromContext(ctx);
 
     if (token && options?.keystore) {
-      const result = await verify(
-        token,
-        async (header: JwtHeader, callback: SigningKeyCallback) => {
-          if (!header.kid) {
-            callback("No kid in JWT header");
-            return;
-          }
-          const key = options.keystore.get(header.kid);
-          if (!key) {
-            callback("Unknown kid");
-            return;
-          }
-          callback(null, (await jose.JWK.asKey(key)).toPEM());
-        }
-      );
+      try {
+        await jose.JWS.createVerify(options.keystore).verify(token);
 
-      // token is valid. continue
-      if (result?.s) {
         await next();
         return;
+      } catch (err) {
+        ctx.status = 403;
+        ctx.body = {
+          status: "error",
+          message: "Invalid bearer token",
+        };
       }
     }
 
